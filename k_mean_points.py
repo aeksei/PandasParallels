@@ -1,14 +1,25 @@
-from geopandas_dataframes import get_streets, get_kgiop_objects
+import geopandas as gpd
+from pandarallel import pandarallel
 
+pandarallel.initialize(progress_bar=True)
 
 if __name__ == "__main__":
-    df_kgiop_objects = get_kgiop_objects().iloc[100]
+    DRIVE_FILE_ID = "1kdqgi94qhdEVvOJAvlpHvurYcurh_5d9"
+    url = f"https://drive.google.com/uc?export=download&id={DRIVE_FILE_ID}"
 
-    df_roads = get_streets().iloc[100]
+    df_kgiop_objects = gpd.read_file(url).iloc[:100]
+    print(df_kgiop_objects.head())
+
+    DRIVE_FILE_ID = "107DtdB8wUehAFoASn-rtQ1jokVam04FN"
+    url = f"https://drive.google.com/uc?export=download&id={DRIVE_FILE_ID}"
+
+    df_roads = gpd.read_file(url).iloc[:100]
+    print(df_roads.head())
 
     K_MEAN_POINTS = 5
-    df_roads["mean_distance"] = df_roads.geometry.apply(
+    mean_distance = df_roads.geometry.parallel_apply(
         lambda road: df_kgiop_objects.distance(road).nsmallest(K_MEAN_POINTS).mean())
 
-    df_roads = df_roads.set_index("id")
-    df_roads["mean_distance"].to_json("k_mean_points_distance.json")
+    mean_distance.hist()
+
+    mean_distance.to_json("k_mean_points_distance.json")
