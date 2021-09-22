@@ -2,9 +2,9 @@ from geopandas_dataframes import get_streets, get_kgiop_objects
 
 
 if __name__ == "__main__":
-    df_kgiop_objects = get_kgiop_objects()
+    df_kgiop_objects = get_kgiop_objects().iloc[100]
 
-    df_roads = get_streets()
+    df_roads = get_streets().iloc[100]
 
     K_MEAN_POINTS = 5
     df_roads["mean_distance"] = df_roads.geometry.apply(
