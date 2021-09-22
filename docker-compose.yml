@@ -3,5 +3,9 @@ services:
   plotly_dash:
     build: .
     ports:
-    - 8050:8050
+      - 8050:8050
     restart: always
+    command:
+      ["python", "./wsgi.py"]
+    volumes:
+      - ./:/usr/src/app
