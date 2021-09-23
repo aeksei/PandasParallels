@@ -5,6 +5,7 @@ from dash import dcc, html
 import plotly.express as px
 import pandas as pd
 import geopandas as gpd
+import plotly.graph_objects as go
 
 from utils import linestring_to_points
 
@@ -27,6 +28,10 @@ df_buffer = linestring_to_points(gdf_roads)
 
 url = f"https://drive.google.com/uc?export=download&id=11AIX7aAqyG_tS5Khkrdm1H28pmH3ii_F"  # contains_kgiop_objects_4326
 df_4326 = pd.read_json(url, orient="index")
+
+url = f"https://drive.google.com/uc?export=download&id=18WfZTor3jqtGybrQEjGRFUZR6vMi0_sx"  # k_mean_points_distance
+k_mean_points_distance_series = pd.read_json(url, orient="index")
+k_mean_points_distance_series.rename(columns={0: "mean_distance"}, inplace=True)
 
 
 def get_density_streets_fig(df):
@@ -58,12 +63,31 @@ def get_streets_with_points(gdf_point, df_linestring):
     return fig
 
 
+def get_violin():
+    data = [k_mean_points_distance_series[k_mean_points_distance_series["mean_distance"] < less] for less in
+            [1000, 500, 250]]
+    data.insert(0, k_mean_points_distance_series)
+
+    names = ["all", "1000", "500", "250"]
+
+    fig = go.Figure()
+    for data_line, name in zip(data, names):
+        fig.add_trace(go.Violin(x=data_line["mean_distance"], name=name))
+
+    fig.update_traces(orientation="h", side="positive", width=3, points=False)
+    fig.update_layout(xaxis_showgrid=False, xaxis_zeroline=False,
+                      title="Среднее растояние до 5 ближайших объектов культурного наследия")
+    fig.update_yaxes(type="category")
+
+    return fig
+
+
 app = dash.Dash(__name__)
 app.layout = html.Div([
     dcc.Graph(figure=get_density_streets_fig(df_roads)),
     dcc.Graph(figure=get_streets_with_points(gdf_kgiop_objects, df_roads)),
     dcc.Graph(figure=px.bar(df_4326, x=df_4326.index, y=0, log_y=True)),
-
+    dcc.Graph(figure=get_violin()),
 ])
 
 
