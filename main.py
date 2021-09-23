@@ -25,6 +25,9 @@ df_roads = linestring_to_points(gdf_roads)
 gdf_roads.geometry = gdf_roads.geometry.buffer(0.0008).boundary
 df_buffer = linestring_to_points(gdf_roads)
 
+url = f"https://drive.google.com/uc?export=download&id=11AIX7aAqyG_tS5Khkrdm1H28pmH3ii_F"  # contains_kgiop_objects_4326
+df_4326 = pd.read_json(url, orient="index")
+
 
 def get_density_streets_fig(df):
     fig = px.density_mapbox(df, lat="lats", lon="lons", z="colors",
@@ -58,7 +61,9 @@ def get_streets_with_points(gdf_point, df_linestring):
 app = dash.Dash(__name__)
 app.layout = html.Div([
     dcc.Graph(figure=get_density_streets_fig(df_roads)),
-    dcc.Graph(figure=get_streets_with_points(gdf_kgiop_objects, df_roads))
+    dcc.Graph(figure=get_streets_with_points(gdf_kgiop_objects, df_roads)),
+    dcc.Graph(figure=px.bar(df_4326, x=df_4326.index, y=0, log_y=True)),
+
 ])
 
 
